@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 import sqlite3
 import wave
+
 from db import init_db
 from ai_engine import process_transcript
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -316,7 +317,7 @@ def meeting_details(id):
     conn.close()
     return render_template("meeting_details.html", meeting=meeting, tasks=tasks)
 
-# # ---------------- Run App ----------------
-# if __name__ == "__main__":
-#     init_db()
-#     app.run(debug=True)
+# ---------------- Run App ----------------
+if __name__ == "__main__":
+    init_db()
+    app.run(debug=True)
