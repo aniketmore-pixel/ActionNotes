@@ -139,11 +139,12 @@
       <div id="collections" class="flex space-x-4 mb-10">
         {% for col in collections %}
         <div
-          class="bg-white px-4 py-2 rounded-2xl shadow-md hover-card"
-          data-collection-id="{{ col.id }}"
-        >
-          {{ col.name }}
-        </div>
+  class="bg-white px-4 py-2 rounded-2xl shadow-md hover-card border border-blue-600"
+  data-collection-id="{{ col.id }}"
+>
+  {{ col.name }}
+</div>
+
         {% endfor %}
       </div>
 
