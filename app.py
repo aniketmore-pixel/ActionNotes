@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 import sqlite3
 import wave
-from vosk import Model, KaldiRecognizer
 from db import init_db
 from ai_engine import process_transcript
 from werkzeug.security import generate_password_hash, check_password_hash
