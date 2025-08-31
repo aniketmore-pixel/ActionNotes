@@ -87,7 +87,8 @@ def home():
     meetings = [dict(row) for row in cursor.fetchall()]
 
     # Fetch collections
-    cursor.execute("SELECT id, name FROM collections")
+    cursor.execute("SELECT id, name FROM collections WHERE user_id = ?", (session["user_id"],))
+
     collections = [dict(row) for row in cursor.fetchall()]
 
     conn.close()
@@ -189,7 +190,8 @@ def create_collection():
     conn = get_conn()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO collections (name) VALUES (?)", (name,))
+        cursor.execute("INSERT INTO collections (name, user_id) VALUES (?, ?)",(name, session["user_id"]))
+
         conn.commit()
     except sqlite3.IntegrityError:
         return jsonify({"error": "Collection name already exists"}), 400
