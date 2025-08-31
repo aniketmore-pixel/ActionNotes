@@ -17,11 +17,11 @@ app = Flask(
     static_folder=os.path.join(os.path.dirname(__file__), "static")
 )
 
-# app.secret_key = "supersecretkey123" 
+app.secret_key = "supersecretkey123" 
 # model = Model("models/vosk-model-small-en-us-0.15")
 # ASSEMBLYAI_KEY = "aea5633912134b76a53c80c5bf615b6d"
 
-app.secret_key = os.environ.get("SECRET_KEY")
+# app.secret_key = os.environ.get("SECRET_KEY")
 ASSEMBLYAI_KEY = os.environ.get("ASSEMBLYAI_KEY")
 DB_PATH = os.environ.get("DB_PATH", "meetings.db")  # fallback to local DB
 
