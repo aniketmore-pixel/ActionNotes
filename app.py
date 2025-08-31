@@ -319,5 +319,7 @@ def meeting_details(id):
 
 # ---------------- Run App ----------------
 if __name__ == "__main__":
+    import os
     init_db()
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Use Render's PORT env variable if available
+    app.run(host="0.0.0.0", port=port, debug=True)
