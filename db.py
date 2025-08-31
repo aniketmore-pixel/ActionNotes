@@ -15,39 +15,18 @@ def init_db():
     ''')
 
     # ---------- Collections table ----------
-    # Check if table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='collections'")
-    if cursor.fetchone():
-        # Check if UNIQUE(name, user_id) exists by trying to create temp table
-        cursor.execute("PRAGMA index_list(collections)")
-        indexes = [row["name"] for row in cursor.fetchall()]
-        if "idx_col_name_user" not in indexes:
-            # Migrate: rename old table, create new, copy data
-            cursor.execute("ALTER TABLE collections RENAME TO collections_old")
-            cursor.execute('''
-            CREATE TABLE collections (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                user_id INTEGER,
-                UNIQUE(name, user_id),
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            )
-            ''')
-            cursor.execute('''
-            INSERT INTO collections (id, name, user_id)
-            SELECT id, name, user_id FROM collections_old
-            ''')
-            cursor.execute("DROP TABLE collections_old")
-    else:
-        cursor.execute('''
-        CREATE TABLE collections (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            user_id INTEGER,
-            UNIQUE(name, user_id),
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        )
-        ''')
+    # Drop old table if exists
+    cursor.execute("DROP TABLE IF EXISTS collections")
+    # Create new table with UNIQUE(name, user_id)
+    cursor.execute('''
+    CREATE TABLE collections (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        user_id INTEGER,
+        UNIQUE(name, user_id),
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+    ''')
 
     # ---------- Meetings table ----------
     cursor.execute('''
