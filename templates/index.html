@@ -515,20 +515,26 @@
         newCollectionPopup.classList.add("hidden");
       });
 
-      // Create button
       newCollectionCreate.addEventListener("click", () => {
-        const name = newCollectionNameInput.value.trim();
-        if (!name) return alert("Please enter a collection name.");
+  const name = newCollectionNameInput.value.trim();
+  if (!name) return alert("Please enter a collection name.");
 
-        fetch("/create_collection", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
-        }).then((res) => {
-          if (res.ok) location.reload();
-          else alert("Error creating collection.");
-        });
-      });
+  fetch("/create_collection", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) location.reload();
+      else alert(data.error || "Error creating collection.");
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Network error");
+    });
+});
+
 
       // Allow pressing Enter key to submit
       newCollectionNameInput.addEventListener("keyup", (e) => {
