@@ -36,7 +36,7 @@ DB_PATH = os.environ.get("DB_PATH", "meetings.db")  # fallback to local DB
 
 # ---------------- Helper Functions ----------------
 def get_conn():
-    conn = sqlite3.connect(DB_PATH, timeout=10)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # <--- Important! Returns dict-like rows
     return conn
 
@@ -179,27 +179,7 @@ def delete_meeting(id):
     conn.close()
     return redirect(url_for("home"))
 
-# # ---------------- Create Collection ----------------
-# @app.route("/create_collection", methods=["POST"])
-# def create_collection():
-#     data = request.get_json()
-#     name = data.get("name")
-#     if not name:
-#         return jsonify({"error": "Name required"}), 400
-
-#     conn = get_conn()
-#     cursor = conn.cursor()
-#     try:
-#         cursor.execute("INSERT INTO collections (name, user_id) VALUES (?, ?)",(name, session["user_id"]))
-
-#         conn.commit()
-#     except sqlite3.IntegrityError:
-#         return jsonify({"error": "Collection name already exists"}), 400
-#     finally:
-#         conn.close()
-#     return jsonify({"success": True})
-
-
+# ---------------- Create Collection ----------------
 @app.route("/create_collection", methods=["POST"])
 def create_collection():
     data = request.get_json()
@@ -209,25 +189,15 @@ def create_collection():
 
     conn = get_conn()
     cursor = conn.cursor()
-    # Check if this user already has a collection with the same name
-    cursor.execute(
-        "SELECT id FROM collections WHERE name = ? AND user_id = ?",
-        (name, session["user_id"])
-    )
-    if cursor.fetchone():
+    try:
+        cursor.execute("INSERT INTO collections (name, user_id) VALUES (?, ?)",(name, session["user_id"]))
+
+        conn.commit()
+    except sqlite3.IntegrityError:
+        return jsonify({"error": "Collection name already exists"}), 400
+    finally:
         conn.close()
-        return jsonify({"error": "You already have a collection with this name"}), 400
-
-    cursor.execute(
-        "INSERT INTO collections (name, user_id) VALUES (?, ?)",
-        (name, session["user_id"])
-    )
-    conn.commit()
-    conn.close()
     return jsonify({"success": True})
-
-
-
 
 # ---------------- View Collection ----------------
 @app.route("/collection/<int:collection_id>")
