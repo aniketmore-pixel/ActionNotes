@@ -597,6 +597,21 @@
           transcriptTextarea.value = "Error during transcription.";
         }
       });
+
+
+      const showMoreBtn = document.getElementById("show-more-btn");
+if (showMoreBtn) {
+  showMoreBtn.addEventListener("click", () => {
+    const hiddenMeetings = document.querySelectorAll(
+      ".meeting-item.hidden"
+    );
+    hiddenMeetings.forEach((m) => m.classList.remove("hidden"));
+
+    // Optionally hide the button after clicking
+    showMoreBtn.style.display = "none";
+  });
+}
+
     </script>
   </body>
 </html>
