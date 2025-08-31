@@ -1,6 +1,4 @@
-Flask>=2.3.3,<3
-Werkzeug>=2.3.3,<3
-requests>=2.30
-mangum>=0.13
+Flask>=2.3.3,<2.3.5
+Werkzeug>=2.3.4,<2.4.0
+requests>=2.31.0
 google-generativeai>=0.1.1
-pymongo
