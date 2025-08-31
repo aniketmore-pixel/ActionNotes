@@ -1,4 +1,4 @@
-Flask==2.3.5
+Flask==2.3.4
 requests==2.31.0
 vosk==0.3.48
 gunicorn==21.2.0
