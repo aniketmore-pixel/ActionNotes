@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ActionNotes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <script src="https://unpkg.com/heroicons@2.0.18/dist/heroicons.min.js"></script>
+    <style>
+      body, button, a, input, textarea, select, label {
+        cursor: none !important;
+      }
+
+      .custom-cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 16px;
+        height: 16px;
+        background-color: #2563eb;
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        transition: transform 0.1s ease-out, width 0.15s ease, height 0.15s ease;
+        z-index: 9999;
+      }
+      a:hover ~ .custom-cursor,
+      button:hover ~ .custom-cursor,
+      .hover-card:hover ~ .custom-cursor {
+        transform: translate(-50%, -50%) scale(2);
+      }
+      .hover-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+      }
+      .hover-btn:hover {
+        transform: translateY(-2px);
+      }
+      .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .dropdown {
+        display: none;
+        position: absolute;
+        right: 1rem;
+        top: 2.5rem;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      .dropdown.show {
+        display: block;
+      }
+      .dropdown button {
+        width: 100%;
+        text-align: left;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: #374151;
+      }
+      .dropdown button:hover {
+        background: #f3f4f6;
+      }
+
+      .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db; /* Tailwind gray-300 */
+  font-size: 0.875rem;
+}
+.flatpickr-monthDropdown-months:focus,
+.flatpickr-current-month input.cur-year:focus {
+  outline: none;
+  border-color: #2563eb; /* Tailwind blue-600 */
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+
+
+    </style>
+  </head>
+  <body
+    class="bg-gradient-to-br from-gray-50 to-gray-100 font-sans min-h-screen transition-all duration-200"
+  >
+    <div class="custom-cursor" id="cursor"></div>
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div
+        class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <h1 class="text-2xl font-bold text-blue-600">ActionNotes</h1>
+        <form method="POST" action="{{ url_for('logout') }}">
+          <button
+            type="submit"
+            class="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 hover-btn transition-all duration-300"
+          >
+            Logout
+          </button>
+        </form>
+      </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-10">
+      <!-- Collections Section -->
+      <div class="flex justify-between items-center mb-6">
+        <h2
+          class="text-2xl font-semibold text-gray-700 flex items-center space-x-2"
+        >
+          <svg
+            class="w-6 h-6 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M3 7h18M3 12h18M3 17h18" />
+          </svg>
+          <span>Collections</span>
+        </h2>
+        <button
+          id="new-collection-btn"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 hover-btn transition-all duration-300"
+        >
+          + New Collection
+        </button>
+      </div>
+      <div id="collections" class="flex space-x-4 mb-10">
+        {% for col in collections %}
+        <div
+          class="bg-white px-4 py-2 rounded-2xl shadow-md hover-card"
+          data-collection-id="{{ col.id }}"
+        >
+          {{ col.name }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Past Meetings -->
+      <h2
+        class="text-2xl font-semibold text-gray-700 mb-6 flex items-center space-x-2"
+      >
+        <svg
+          class="w-6 h-6 text-blue-600"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"
+          />
+        </svg>
+        <span>Past Meetings</span>
+      </h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        {% for meeting in meetings %}
+        <div
+          class="bg-white rounded-2xl shadow-md p-4 hover-card transition-all duration-300 relative"
+        >
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h3 class="text-lg font-semibold text-blue-600">
+                {{ meeting.title }}
+              </h3>
+              <span class="text-xs text-gray-500">{{ meeting.date }}</span>
+            </div>
+            <div class="relative">
+              <button class="dots-btn text-gray-400 hover:text-gray-700">
+                &bull;&bull;&bull;
+              </button>
+              <div class="dropdown">
+                <form
+                  method="POST"
+                  action="/delete_meeting/{{ meeting.id }}"
+                  class="delete-meeting-form"
+                >
+                  <button type="button">Delete</button>
+                </form>
+                <button class="move-btn" data-meeting-id="{{ meeting.id }}">
+                  Move to Collection
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="text-gray-700 whitespace-pre-wrap mb-3 text-sm line-clamp-3"
+          >
+            {{ meeting.summary }}
+          </div>
+          <a
+            href="/meeting/{{ meeting.id }}"
+            class="inline-block bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-blue-700 hover-btn transition-all duration-300 text-sm"
+            >View Details</a
+          >
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Upload Section -->
+<h2 class="text-2xl font-semibold text-gray-700 mt-10 mb-6 flex items-center space-x-2">
+  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path d="M12 4v16m8-8H4" />
+  </svg>
+  <span>New Meeting</span>
+</h2>
+
+<div class="bg-white shadow-md rounded-3xl p-8 hover-card transition-all duration-300">
+  <form method="POST" action="/upload" class="space-y-5">
+    <!-- Meeting Title -->
+    <div class="space-y-2">
+      <label class="block text-gray-700 font-medium">Meeting Title</label>
+      <input
+        type="text"
+        name="title"
+        class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+        placeholder="Enter meeting title"
+        required
+      />
+    </div>
+
+    <!-- Date -->
+    <div class="space-y-2">
+      <label class="block text-gray-700 font-medium">Date</label>
+      <input
+        type="text"
+        id="date-picker"
+        name="date"
+        class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+        placeholder="Select date"
+        required
+      />
+    </div>
+
+    <!-- Audio Upload -->
+    <div class="space-y-2">
+      <label class="block text-gray-700 font-medium">Upload Audio</label>
+      <input
+        type="file"
+        id="audio-upload"
+        accept="audio/*"
+        class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+      />
+      <p class="text-xs text-gray-500">Supported: WAV, MP3. Transcript will be auto-filled.</p>
+    </div>
+
+    <!-- Transcript -->
+    <div class="space-y-2">
+      <label class="block text-gray-700 font-medium">Transcript</label>
+      <textarea
+        name="transcript"
+        rows="6"
+        class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+        placeholder="Paste transcript here..."
+        required
+      ></textarea>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="pt-3">
+      <button
+        type="submit"
+        class="w-1/2 mx-auto block bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 hover-btn transition-all duration-300"
+      >
+        Save Meeting
+      </button>
+    </div>
+  </form>
+</div>
+
+    <!-- Move to Collection Popup -->
+    <div
+      id="move-popup"
+      class="hidden fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+    >
+      <div class="bg-white p-6 rounded-xl w-80">
+        <h3 class="font-semibold text-gray-700 mb-4">Select Collection</h3>
+        <div id="move-collection-list" class="flex flex-col space-y-2"></div>
+        <button
+          id="move-cancel"
+          class="mt-4 bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Delete Meeting Popup -->
+    <div
+      id="delete-popup"
+      class="hidden fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+    >
+      <div class="bg-white p-6 rounded-xl w-80">
+        <h3 class="font-semibold text-gray-700 mb-4">
+          Are you sure you want to delete this meeting?
+        </h3>
+        <div class="flex justify-end space-x-3">
+          <button
+            id="delete-cancel"
+            class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            id="delete-confirm"
+            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div
+      id="toast"
+      class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-all duration-300"
+    ></div>
+
+    <!-- New Collection Popup -->
+    <div
+      id="new-collection-popup"
+      class="hidden fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+    >
+      <div class="bg-white p-6 rounded-xl w-80">
+        <h3 class="font-semibold text-gray-700 mb-4">Create New Collection</h3>
+        <input
+          id="new-collection-name"
+          type="text"
+          placeholder="Collection name"
+          class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 mb-4"
+        />
+        <div class="flex justify-end space-x-3">
+          <button
+            id="new-collection-cancel"
+            class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            id="new-collection-create"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+      const cursor = document.getElementById("cursor");
+      document.addEventListener("mousemove", (e) => {
+        cursor.style.left = e.clientX + "px";
+        cursor.style.top = e.clientY + "px";
+      });
+
+      // Dropdown toggle
+      document.querySelectorAll(".dots-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const dropdown = btn.nextElementSibling;
+          dropdown.classList.toggle("show");
+        });
+      });
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".dots-btn"))
+          document
+            .querySelectorAll(".dropdown")
+            .forEach((dd) => dd.classList.remove("show"));
+      });
+
+      // Navigate to collection page
+      document.querySelectorAll("#collections > div").forEach((col) => {
+        col.addEventListener("click", () => {
+          const colId = col.dataset.collectionId;
+          window.location.href = `/collection/${colId}`;
+        });
+      });
+
+      // Flatpickr with modern styling
+      flatpickr("#date-picker", {
+  dateFormat: "Y-m-d",
+  allowInput: true,
+  wrap: false,
+  monthSelectorType: "dropdown", // makes month a dropdown
+  yearSelectorType: "dropdown",  // makes year a dropdown
+  minDate: "2000-01-01",
+  maxDate: "2030-12-31",
+  onReady: function (selectedDates, dateStr, instance) {
+    const cal = instance.calendarContainer;
+    cal.classList.add("bg-white", "shadow-lg", "rounded-xl", "p-4");
+  },
+});
+
+
+      // Move to Collection popup
+      const moveBtns = document.querySelectorAll(".move-btn");
+      const movePopup = document.getElementById("move-popup");
+      const moveList = document.getElementById("move-collection-list");
+      const moveCancel = document.getElementById("move-cancel");
+
+      moveBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const meetingId = btn.dataset.meetingId;
+          moveList.innerHTML = "";
+          movePopup.classList.remove("hidden");
+          document.querySelectorAll("#collections > div").forEach((col) => {
+            const div = document.createElement("button");
+            div.textContent = col.textContent;
+            div.dataset.collectionId = col.dataset.collectionId;
+            div.className = "text-left px-3 py-1 rounded-lg hover:bg-gray-100";
+            div.addEventListener("click", () => {
+              // Send POST request to move meeting
+              fetch(`/move_meeting/${meetingId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  collection_id: div.dataset.collectionId,
+                }),
+              }).then((res) => {
+                if (res.ok) {
+                  showToast("Meeting moved successfully!");
+                  movePopup.classList.add("hidden");
+                  setTimeout(() => location.reload(), 500);
+                }
+              });
+            });
+            moveList.appendChild(div);
+          });
+        });
+      });
+      moveCancel.addEventListener("click", () =>
+        movePopup.classList.add("hidden")
+      );
+
+      // Delete meeting popup
+      const deletePopup = document.getElementById("delete-popup");
+      const deleteCancel = document.getElementById("delete-cancel");
+      const deleteConfirm = document.getElementById("delete-confirm");
+      let meetingToDelete = null;
+
+      document
+        .querySelectorAll(".delete-meeting-form button")
+        .forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            meetingToDelete = btn.closest("form").action;
+            deletePopup.classList.remove("hidden");
+          });
+        });
+
+      deleteCancel.addEventListener("click", () =>
+        deletePopup.classList.add("hidden")
+      );
+      deleteConfirm.addEventListener("click", () => {
+        if (meetingToDelete) {
+          fetch(meetingToDelete, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }).then((r) => {
+            if (r.ok) {
+              showToast("Meeting deleted successfully!");
+              deletePopup.classList.add("hidden");
+              setTimeout(() => location.reload(), 500);
+            } else {
+              showToast("Error deleting meeting.");
+            }
+          });
+        }
+      });
+
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        toast.textContent = msg;
+        toast.style.opacity = 1;
+        setTimeout(() => {
+          toast.style.opacity = 0;
+        }, 2000);
+      }
+
+      const newCollectionBtn = document.getElementById("new-collection-btn");
+      const newCollectionPopup = document.getElementById(
+        "new-collection-popup"
+      );
+      const newCollectionCancel = document.getElementById(
+        "new-collection-cancel"
+      );
+      const newCollectionCreate = document.getElementById(
+        "new-collection-create"
+      );
+      const newCollectionNameInput = document.getElementById(
+        "new-collection-name"
+      );
+
+      // Open popup
+      newCollectionBtn.addEventListener("click", () => {
+        newCollectionNameInput.value = "";
+        newCollectionPopup.classList.remove("hidden");
+        newCollectionNameInput.focus();
+      });
+
+      // Cancel button
+      newCollectionCancel.addEventListener("click", () => {
+        newCollectionPopup.classList.add("hidden");
+      });
+
+      // Create button
+      newCollectionCreate.addEventListener("click", () => {
+        const name = newCollectionNameInput.value.trim();
+        if (!name) return alert("Please enter a collection name.");
+
+        fetch("/create_collection", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        }).then((res) => {
+          if (res.ok) location.reload();
+          else alert("Error creating collection.");
+        });
+      });
+
+      // Allow pressing Enter key to submit
+      newCollectionNameInput.addEventListener("keyup", (e) => {
+        if (e.key === "Enter") newCollectionCreate.click();
+      });
+
+      const audioInput = document.getElementById("audio-upload");
+      const transcriptTextarea = document.querySelector(
+        "textarea[name='transcript']"
+      );
+
+      audioInput.addEventListener("change", async () => {
+        const file = audioInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("audio", file);
+
+        // Show temporary message
+        transcriptTextarea.value = "Transcribing audio, please wait...";
+
+        try {
+          const response = await fetch("/upload_audio", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json();
+          if (data.transcript) {
+            transcriptTextarea.value = data.transcript;
+          } else {
+            transcriptTextarea.value = "Transcription failed.";
+          }
+        } catch (err) {
+          console.error(err);
+          transcriptTextarea.value = "Error during transcription.";
+        }
+      });
+    </script>
+  </body>
+</html>
