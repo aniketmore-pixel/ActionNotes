@@ -5,7 +5,6 @@
 [![Gemini AI](https://img.shields.io/badge/Google%20Gemini-1.5%20Flash-orange.svg)](https://ai.google/)
 [![AssemblyAI](https://img.shields.io/badge/AssemblyAI-Speech%20to%20Text-brightgreen.svg)](https://www.assemblyai.com/)
 [![SQLite](https://img.shields.io/badge/Database-SQLite-lightblue.svg)](https://www.sqlite.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -16,7 +15,7 @@ It allows you to **upload meeting recordings or transcripts** and automatically:
 - 🎙️ Converts **audio to text** using **AssemblyAI**.
 - 🤖 Generates **concise summaries** with **Google Gemini 1.5 Flash**.
 - ✅ Extracts **action items grouped by person**.
-- 📂 Organizes everything into **collections** and dashboards.
+- 📂 Organizes everything into **collections**.
 
 ---
 
@@ -26,7 +25,7 @@ It allows you to **upload meeting recordings or transcripts** and automatically:
 - 🤖 **AI Summaries** — Get **5-point concise summaries** of meetings.
 - ✅ **Task Extraction** — Action items are grouped **by person** automatically.
 - 📂 **Collections** — Organize meetings into collections for easy navigation.
-- 🗄️ **Database-Backed** — Uses **SQLite** for users, meetings, tasks, and collections.
+- 🗄️ **Database** — Uses **SQLite** for users, meetings, tasks, and collections.
 - 🖥️ **Web Dashboard** — Intuitive and responsive interface.
 
 ---
@@ -127,13 +126,7 @@ python app.py
 
 ### **AssemblyAI**
 - Task: Transcribes **uploaded meeting recordings**.
-
----
-
-## 📜 License
-This project is licensed under the **MIT License**.  
-You are free to use, modify, and distribute it.
-
+  
 ---
 
 ## 🤝 Contributing
@@ -148,9 +141,5 @@ Contributions are welcome! 🚀
 ## 📧 Contact
 **Author:** Aniket More  
 🔗 GitHub: [@aniketmore-pixel](https://github.com/aniketmore-pixel)  
-📩 Email: [your-email@example.com](mailto:your-email@example.com)  
+📩 Email: [aniketmore.personal@gmail.com](mailto:aniketmore.personal@gmail.com)  
 
----
-
-## 🌟 Screenshots (Optional)
-*Add screenshots of the dashboard, upload page, and meeting details here for better presentation.*
