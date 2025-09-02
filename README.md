@@ -1,16 +1,3 @@
-Perfect 🙂 Now I have a full picture of **ActionNotes**:
-
-* **ai\_engine.py** → Uses **Gemini AI** to summarize meetings & extract action items.
-* **app.py** → Flask-based dashboard + **AssemblyAI** for transcription + CRUD operations for meetings, tasks, and collections.
-* **db.py** → SQLite-based schema for users, meetings, tasks, and collections.
-
-With this, I can now create a **professional, polished, and SEO-friendly** `README.md` optimized for GitHub.
-
----
-
-# **Final README.md for ActionNotes**
-
-```markdown
 # 📝 ActionNotes
 > AI-powered meeting notes manager — **Summarize meetings**, **extract action items**, and **organize everything** in one place.
 
@@ -61,12 +48,11 @@ It allows you to **upload meeting recordings or transcripts** and automatically:
 ## 📂 Project Structure
 
 ```
-
 ActionNotes/
 │── app.py              # Main Flask app & routes
-│── ai\_engine.py        # AI integration with Gemini API
+│── ai_engine.py        # AI integration with Gemini API
 │── db.py               # SQLite schema & DB initialization
-│── db\_utils.py         # DB helper functions (optional)
+│── db_utils.py         # DB helper functions (optional)
 │── templates/          # Jinja2 HTML templates
 │── static/             # CSS, JS, and assets
 │── models/             # Pre-trained models (if any)
@@ -74,8 +60,7 @@ ActionNotes/
 │── requirements.txt    # Python dependencies
 │── .env                # API keys & secrets
 └── README.md           # Project documentation
-
-````
+```
 
 ---
 
@@ -85,29 +70,24 @@ ActionNotes/
 ```bash
 git clone https://github.com/aniketmore-pixel/ActionNotes.git
 cd ActionNotes
-````
+```
 
 ### **2. Create a Virtual Environment**
-
 ```bash
 python -m venv venv
 ```
 
 Activate it:
-
-* **Windows:** `venv\Scripts\activate`
-* **Linux/Mac:** `source venv/bin/activate`
+- **Windows:** `venv\Scripts\activate`
+- **Linux/Mac:** `source venv/bin/activate`
 
 ### **3. Install Dependencies**
-
 ```bash
 pip install -r requirements.txt
 ```
 
 ### **4. Configure Environment Variables**
-
 Create a `.env` file in the root folder:
-
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key
 ASSEMBLYAI_KEY=your_assemblyai_api_key
@@ -116,29 +96,24 @@ SECRET_KEY=your_flask_secret_key
 ```
 
 ### **5. Initialize the Database**
-
 ```bash
 python -c "from db import init_db; init_db()"
 ```
 
 ### **6. Run the Application**
-
 ```bash
 python app.py
 ```
-
 > The app will start on: **[http://127.0.0.1:5000](http://127.0.0.1:5000)**
 
 ---
 
 ## 💻 Usage
-
 1. **Sign up / Log in** to create a personal workspace.
 2. **Upload audio files** or **paste transcripts**.
 3. Wait for:
-
-   * 🎙️ Transcription (**AssemblyAI**)
-   * 🧠 AI summaries & tasks (**Gemini**)
+   - 🎙️ Transcription (**AssemblyAI**)
+   - 🧠 AI summaries & tasks (**Gemini**)
 4. Organize meetings into **collections**.
 5. View, edit, or delete meetings anytime.
 
@@ -147,56 +122,35 @@ python app.py
 ## 🔑 API Integrations
 
 ### **Google Gemini AI**
-
-* Model: **gemini-1.5-flash**
-* Task: Generates **summaries** and **action items**.
+- Model: **gemini-1.5-flash**
+- Task: Generates **summaries** and **action items**.
 
 ### **AssemblyAI**
-
-* Task: Transcribes **uploaded meeting recordings**.
+- Task: Transcribes **uploaded meeting recordings**.
 
 ---
 
 ## 📜 License
-
-This project is licensed under the **MIT License**.
+This project is licensed under the **MIT License**.  
 You are free to use, modify, and distribute it.
 
 ---
 
 ## 🤝 Contributing
-
-Contributions are welcome! 🚀
-
-1. **Fork** the repo.
-2. Create a new branch (`feature/my-feature`).
-3. Commit changes.
-4. Submit a **pull request**.
+Contributions are welcome! 🚀  
+1. **Fork** the repo.  
+2. Create a new branch (`feature/my-feature`).  
+3. Commit changes.  
+4. Submit a **pull request**.  
 
 ---
 
 ## 📧 Contact
-
-**Author:** Aniket More
-🔗 GitHub: [@aniketmore-pixel](https://github.com/aniketmore-pixel)
-📩 Email: \[[your-email@example.com](mailto:your-email@example.com)]
+**Author:** Aniket More  
+🔗 GitHub: [@aniketmore-pixel](https://github.com/aniketmore-pixel)  
+📩 Email: [your-email@example.com](mailto:your-email@example.com)  
 
 ---
 
 ## 🌟 Screenshots (Optional)
-
 *Add screenshots of the dashboard, upload page, and meeting details here for better presentation.*
-
----
-
-## ✅ Next Steps for You
-
-* Add a `requirements.txt` file.
-* Include a `.env.example` for contributors.
-* Add screenshots or a **demo GIF**.
-* Deploy on **Render**, **Railway**, or **Vercel** for public access.
-
----
-
-Do you also want me to **generate a complete `requirements.txt`** for this project based on your code?
-It’ll make installation seamless. Should I?
