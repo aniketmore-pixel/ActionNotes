@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Meeting Calendar</title>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    class="bg-gradient-to-br from-gray-50 to-gray-100 font-sans min-h-screen"
+  >
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div
+        class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <h1
+          class="text-2xl font-bold text-blue-600 flex items-center space-x-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-7 w-7 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10m-12 4h14M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2h-1V3m-12 2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span>Meeting Calendar</span>
+        </h1>
+        <div class="space-x-2">
+            <button
+              id="addMeetingBtn"
+              class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300"
+            >
+              + Add Meeting
+            </button>
+            <a
+              href="{{ url_for('home') }}"
+              class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300"
+            >
+              Back
+            </a>
+          </div>
+          
+      </div>
+    </nav>
+
+    <!-- Calendar Wrapper -->
+    <div class="max-w-7xl mx-auto px-6 py-10">
+      <div
+        class="bg-white rounded-2xl shadow-md p-6 hover-card transition-all duration-300"
+      >
+        <div id="calendar"></div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      id="meetingModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+    >
+      <div class="bg-white p-6 rounded-2xl shadow-lg w-96">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">
+          Schedule Meeting
+        </h2>
+        <form id="meetingForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Title</label
+            >
+            <input
+              type="text"
+              id="meetingTitle"
+              class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              placeholder="Enter meeting title"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Date</label
+            >
+            <input
+              type="datetime-local"
+              id="meetingDate"
+              class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Description</label
+            >
+            <textarea
+              id="meetingDesc"
+              rows="3"
+              class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              placeholder="Add meeting description..."
+            ></textarea>
+          </div>
+          <div class="flex justify-end space-x-3 pt-2">
+            <button
+              type="button"
+              id="cancelBtn"
+              class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Daily Meetings Modal -->
+    <div
+      id="dayMeetingsModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+    >
+      <div
+        class="bg-white p-6 rounded-2xl shadow-lg w-[28rem] max-h-[80vh] overflow-y-auto"
+      >
+        <h2
+          id="dayMeetingsTitle"
+          class="text-xl font-semibold text-gray-700 mb-4"
+        >
+          Meetings on
+        </h2>
+        <ul id="dayMeetingsList" class="space-y-3 text-gray-700"></ul>
+        <div class="flex justify-end mt-4">
+          <button
+            id="closeDayModal"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var calendarEl = document.getElementById("calendar");
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          selectable: true,
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay",
+          },
+          events: "/get_upcoming_meetings",
+        });
+        calendar.render();
+
+        // Modal logic
+        const modal = document.getElementById("meetingModal");
+        const addBtn = document.getElementById("addMeetingBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+        const form = document.getElementById("meetingForm");
+
+        addBtn.addEventListener("click", () =>
+          modal.classList.remove("hidden")
+        );
+        cancelBtn.addEventListener("click", () =>
+          modal.classList.add("hidden")
+        );
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const title = document.getElementById("meetingTitle").value;
+          const date = document.getElementById("meetingDate").value;
+          const desc = document.getElementById("meetingDesc").value;
+
+          const res = await fetch("/add_upcoming_meeting", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: title,
+              date: date,
+              description: desc,
+            }),
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            modal.classList.add("hidden");
+            form.reset();
+            calendar.refetchEvents();
+          } else {
+            alert(data.error || "Error saving meeting");
+          }
+        });
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          selectable: true,
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay",
+          },
+          events: "/get_upcoming_meetings",
+
+          // 👇 New handler for clicking a day
+          dateClick: async function (info) {
+            const date = info.dateStr;
+            const res = await fetch(`/get_meetings_by_date?date=${date}`);
+            const data = await res.json();
+
+            const modal = document.getElementById("dayMeetingsModal");
+            const list = document.getElementById("dayMeetingsList");
+            const title = document.getElementById("dayMeetingsTitle");
+
+            // Set modal title
+            title.textContent = `Meetings on ${date}`;
+
+            // Clear old list
+            list.innerHTML = "";
+
+            if (data.meetings && data.meetings.length > 0) {
+              data.meetings.forEach((m) => {
+                const li = document.createElement("li");
+                li.className =
+                  "p-3 rounded-xl border border-gray-200 hover:shadow-md transition-all";
+                li.innerHTML = `
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="font-semibold text-blue-600">${m.title}</div>
+        <div class="text-sm text-gray-500">${m.date}</div>
+        <p class="text-sm mt-1">${m.description || ""}</p>
+      </div>
+      <button 
+        class="deleteBtn px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition"
+        data-id="${m.id}">
+        Delete
+      </button>
+    </div>
+  `;
+
+                list.appendChild(li);
+              });
+
+              // Attach delete event listeners
+              document.querySelectorAll(".deleteBtn").forEach((btn) => {
+                btn.addEventListener("click", async (e) => {
+                  const id = e.target.getAttribute("data-id");
+
+                  if (
+                    confirm("Are you sure you want to delete this meeting?")
+                  ) {
+                    const res = await fetch(`/delete_upcoming_meeting/${id}`, {
+                      method: "DELETE",
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                      // Refresh the day modal
+                      e.target.closest("li").remove();
+                      calendar.refetchEvents();
+                    } else {
+                      alert(data.error || "Failed to delete meeting");
+                    }
+                  }
+                });
+              });
+            } else {
+              list.innerHTML = `<li class="text-gray-500">No meetings scheduled.</li>`;
+            }
+
+            modal.classList.remove("hidden");
+          },
+        });
+
+        calendar.render();
+
+        // Close daily meetings modal
+        document
+          .getElementById("closeDayModal")
+          .addEventListener("click", () => {
+            document.getElementById("dayMeetingsModal").classList.add("hidden");
+          });
+      });
+    </script>
+  </body>
+</html>

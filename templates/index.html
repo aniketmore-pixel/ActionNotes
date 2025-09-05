@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>ActionNotes</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
@@ -75,6 +76,8 @@
         background: #f3f4f6;
       }
 
+      
+
       .flatpickr-monthDropdown-months,
 .flatpickr-current-month input.cur-year {
   padding: 0.25rem 0.5rem;
@@ -91,6 +94,8 @@
 
 
 
+
+
     </style>
   </head>
   <body
@@ -104,15 +109,28 @@
         class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"
       >
         <h1 class="text-2xl font-bold text-blue-600">ActionNotes</h1>
-        <form method="POST" action="{{ url_for('logout') }}">
-          <button
-            type="submit"
-            class="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 hover-btn transition-all duration-300"
+
+        <div class="flex space-x-3">
+         
+          <!-- Upcoming button -->
+          <a
+            href="{{ url_for('calendar_page') }}"
+            class="text-sm font-medium text-blue-600 bg-white border border-blue-600 px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300"
           >
-            Logout
-          </button>
-        </form>
-      </div>
+            Upcoming
+          </a>
+        
+          <!-- Logout button -->
+          <form method="POST" action="{{ url_for('logout') }}">
+            <button
+              type="submit"
+              class="text-sm font-medium text-blue-600 bg-white border border-blue-600 px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300"
+            >
+              Logout
+            </button>
+          </form>
+        </div>
+        
     </nav>
 
     <div class="max-w-7xl mx-auto px-6 py-10">
@@ -173,6 +191,18 @@
       </svg>
       <span>Past Meetings</span>
     </h2>
+
+    <!-- Search Bar -->
+    <div class="mb-6">
+      <input
+        type="text"
+        id="meeting-search"
+        placeholder="Search meetings..."
+        class="w-full md:w-1/2 border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+      />
+    </div>
+
+
     <div id="meetings-container" class="grid md:grid-cols-2 gap-6">
       {% for meeting in meetings %}
       <div
@@ -181,7 +211,7 @@
       >
         <div class="flex justify-between items-start mb-2">
           <div>
-            <h3 class="text-lg font-semibold text-blue-600">
+            <h3 class="meeting-title text-lg font-semibold text-blue-600">
               {{ meeting.title }}
             </h3>
             <span class="text-xs text-gray-500">{{ meeting.date }}</span>
@@ -615,6 +645,24 @@ if (showMoreBtn) {
     showMoreBtn.style.display = "none";
   });
 }
+
+
+    // Meeting Search Filter
+const searchInput = document.getElementById("meeting-search");
+if (searchInput) {
+  searchInput.addEventListener("keyup", () => {
+    const query = searchInput.value.toLowerCase();
+    document.querySelectorAll(".meeting-item").forEach((item) => {
+      const title = item.querySelector(".meeting-title").textContent.toLowerCase();
+      if (title.includes(query)) {
+        item.style.display = "block";
+      } else {
+        item.style.display = "none";
+      }
+    });
+  });
+}
+
 
     </script>
   </body>

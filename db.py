@@ -61,6 +61,18 @@ def init_db():
         FOREIGN KEY(meeting_id) REFERENCES meetings(id)
     )
     ''')
+    
+    # ---------- Upcoming Meetings table ----------
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS upcoming_meetings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        date TEXT NOT NULL,
+        description TEXT,
+        user_id INTEGER,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+    ''')
 
     conn.commit()
     conn.close()

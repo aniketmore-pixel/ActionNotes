@@ -1,7 +1,9 @@
-from flask import Flask, request, jsonify, render_template, session, redirect, url_for
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for, make_response
 import sqlite3
 import wave
-
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
 from db import init_db
 from ai_engine import process_transcript
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -318,6 +320,150 @@ def meeting_details(id):
 
     conn.close()
     return render_template("meeting_details.html", meeting=meeting, tasks=tasks)
+
+@app.route("/calendar")
+def calendar_page():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    return render_template("calendar.html")
+
+
+@app.route("/download_pdf/<int:id>")
+def download_pdf(id):
+    conn = get_conn()
+    meeting = conn.execute("SELECT * FROM meetings WHERE id = ?", (id,)).fetchone()
+    tasks = conn.execute("SELECT person, task FROM tasks WHERE meeting_id = ?", (id,)).fetchall()
+    conn.close()
+
+    if meeting is None:
+        return "Meeting not found", 404
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph(f"<b>{meeting['title']}</b>", styles["Title"]))
+    elements.append(Paragraph(f"Date: {meeting['date']}", styles["Normal"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph("<b>Transcript:</b>", styles["Heading2"]))
+    elements.append(Paragraph(meeting['transcript'], styles["Normal"]))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph("<b>Summary / Action Items:</b>", styles["Heading2"]))
+    elements.append(Paragraph(meeting['summary'], styles["Normal"]))
+    elements.append(Spacer(1, 12))
+
+    if tasks:
+        elements.append(Paragraph("<b>Tasks:</b>", styles["Heading2"]))
+        for task in tasks:
+            elements.append(Paragraph(f"{task['person']}: {task['task']}", styles["Normal"]))
+
+    doc.build(elements)
+    pdf = buffer.getvalue()
+    buffer.close()
+
+    response = make_response(pdf)
+    response.headers["Content-Disposition"] = f"attachment; filename=meeting_{id}.pdf"
+    response.headers["Content-Type"] = "application/pdf"
+    return response
+
+# ---------------- Add Upcoming Meeting ----------------
+@app.route("/add_upcoming_meeting", methods=["POST"])
+def add_upcoming_meeting():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    data = request.get_json()
+    title = data.get("title")
+    date = data.get("date")
+    description = data.get("description")
+
+    if not title or not date:
+        return jsonify({"error": "Title and Date are required"}), 400
+
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO upcoming_meetings (title, date, description, user_id) VALUES (?, ?, ?, ?)",
+            (title, date, description, session["user_id"])
+        )
+        conn.commit()
+        meeting_id = cursor.lastrowid
+        conn.close()
+        return jsonify({"success": True, "id": meeting_id})
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Database error"}), 500
+
+@app.route("/get_upcoming_meetings")
+def get_upcoming_meetings():
+    if "user_id" not in session:
+        return jsonify([])  # no events if not logged in
+
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, title, date, description FROM upcoming_meetings WHERE user_id = ?",
+        (session["user_id"],)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Convert DB rows -> FullCalendar event objects
+    events = []
+    for row in rows:
+        events.append({
+            "id": row["id"],
+            "title": row["title"],
+            "start": row["date"],   # must be ISO 8601 format string
+            "description": row["description"]
+        })
+
+    return jsonify(events)
+
+@app.route("/get_meetings_by_date")
+def get_meetings_by_date():
+    date_str = request.args.get("date")  # comes from JS, format: YYYY-MM-DD
+    if not date_str:
+        return jsonify({"meetings": []})
+
+    try:
+        conn = sqlite3.connect("meetings.db")
+        conn.row_factory = sqlite3.Row  # rows as dict-like objects
+        cursor = conn.cursor()
+
+        # Match all rows where date starts with "YYYY-MM-DD"
+        cursor.execute(
+            "SELECT id, title, date, description FROM upcoming_meetings WHERE date LIKE ?",
+            (f"{date_str}%",)
+        )
+        rows = cursor.fetchall()
+        conn.close()
+
+        # Convert to list of dicts
+        meetings = [dict(row) for row in rows]
+
+        return jsonify({"meetings": meetings})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/delete_upcoming_meeting/<int:meeting_id>", methods=["DELETE"])
+def delete_upcoming_meeting(meeting_id):
+    try:
+        conn = sqlite3.connect("meetings.db")
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM upcoming_meetings WHERE id = ?", (meeting_id,))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 # ---------------- Run App ----------------
 if __name__ == "__main__":
