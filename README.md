@@ -98,7 +98,7 @@ Create a `.env` file in the root folder:
 ```env
 GEMINI_API_KEY=your_google_gemini_api_key
 ASSEMBLYAI_KEY=your_assemblyai_api_key
-DB_PATH=meetings.db
+DB_URL=your_sqlitecloud_connection_string
 SECRET_KEY=your_flask_secret_key
 ```
 
