@@ -204,16 +204,20 @@ def upload():
 
 
 
-# ---------------- Delete Meeting ----------------
 @app.route("/delete_meeting/<int:id>", methods=["POST"])
 def delete_meeting(id):
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM meetings WHERE id = ?", (id,))
-    cursor.execute("DELETE FROM tasks WHERE meeting_id = ?", (id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for("home"))
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM tasks WHERE meeting_id = ?", (id,))
+        cursor.execute("DELETE FROM meetings WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        print("Error deleting meeting:", e)
+        return jsonify({"error": "Database error"}), 500
+
 
 # ---------------- Create Collection ----------------
 @app.route("/create_collection", methods=["POST"])
