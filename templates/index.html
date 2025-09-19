@@ -338,6 +338,46 @@
   </form>
 </div>
 
+<!-- Floating Chatbot Button -->
+<!-- Floating Chatbot Button -->
+<div id="chatbot-btn" 
+     style="position:fixed; bottom:20px; right:20px; 
+            background:linear-gradient(135deg, #4f46e5, #3b82f6); 
+            color:white; border-radius:50%; width:70px; height:70px; 
+            display:flex; justify-content:center; align-items:center; 
+            font-size:32px; cursor:pointer; box-shadow:0 6px 15px rgba(0,0,0,0.3); 
+            transition: transform 0.2s, box-shadow 0.2s;">
+  <!-- Modern Chat Icon (SVG) -->
+  <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="32" height="32">
+    <path d="M2 3a1 1 0 011-1h18a1 1 0 011 1v14a1 1 0 01-1 1h-4l-4 4-4-4H3a1 1 0 01-1-1V3z"/>
+  </svg>
+</div>
+
+
+<!-- Chatbot Window -->
+<div id="chatbot-window" 
+     style="position:fixed; bottom:90px; right:20px; width:300px; height:400px; 
+            background:white; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.2); 
+            display:none; flex-direction:column; overflow:hidden;">
+
+  <div style="background:#2563eb; color:white; padding:10px; font-weight:bold;">
+    ActionNotes Assistant 🤖
+  </div>
+
+  <div id="chatbot-messages" 
+       style="flex:1; padding:10px; overflow-y:auto; font-size:14px; line-height:1.4;">
+  </div>
+
+  <div style="display:flex; border-top:1px solid #ddd;">
+    <input id="chatbot-input" type="text" placeholder="Type a message..."
+           style="flex:1; border:none; padding:10px; font-size:14px;" />
+    <button id="chatbot-send" 
+            style="background:#2563eb; color:white; border:none; padding:0 15px; cursor:pointer;">
+      ➤
+    </button>
+  </div>
+</div>
+
     <!-- Move to Collection Popup -->
     <div
       id="move-popup"
@@ -661,6 +701,74 @@ if (searchInput) {
       }
     });
   });
+}
+
+const chatbotBtn = document.getElementById("chatbot-btn");
+  chatbotBtn.addEventListener("mouseenter", () => {
+    chatbotBtn.style.transform = "scale(1.1)";
+    chatbotBtn.style.boxShadow = "0 10px 25px rgba(0,0,0,0.4)";
+  });
+  chatbotBtn.addEventListener("mouseleave", () => {
+    chatbotBtn.style.transform = "scale(1)";
+    chatbotBtn.style.boxShadow = "0 6px 15px rgba(0,0,0,0.3)";
+  });
+
+  // Existing toggle code
+  const chatbotWindow = document.getElementById("chatbot-window");
+  chatbotBtn.addEventListener("click", () => {
+    chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "flex" : "none";
+  });
+const chatbotMessages = document.getElementById("chatbot-messages");
+
+// Default welcome message
+const defaultBotMsg = document.createElement("div");
+defaultBotMsg.style.cssText = "background:#f3f4f6; color:#111; padding:6px 10px; border-radius:8px; margin:4px 0; align-self:flex-start; max-width:80%;";
+defaultBotMsg.textContent = "Hello! 👋 I’m your ActionNotes Assistant. Ask me how to use ActionNotes, upload meetings, or manage collections.";
+chatbotMessages.appendChild(defaultBotMsg);
+chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+
+const chatbotInput = document.getElementById("chatbot-input");
+const chatbotSend = document.getElementById("chatbot-send");
+
+// chatbotBtn.onclick = () => {
+//   chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "flex" : "none";
+// };
+
+// send message
+chatbotSend.onclick = sendMessage;
+chatbotInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+
+async function sendMessage() {
+  const text = chatbotInput.value.trim();
+  if (!text) return;
+
+  // show user msg
+  const userMsg = document.createElement("div");
+  userMsg.style.cssText = "background:#2563eb; color:white; padding:6px 10px; border-radius:8px; margin:4px 0; align-self:flex-end; max-width:80%;";
+  userMsg.textContent = text;
+  chatbotMessages.appendChild(userMsg);
+  chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+  chatbotInput.value = "";
+
+  try {
+    const res = await fetch("/chatbot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
+    const data = await res.json();
+
+    const botMsg = document.createElement("div");
+    botMsg.style.cssText = "background:#f3f4f6; color:#111; padding:6px 10px; border-radius:8px; margin:4px 0; align-self:flex-start; max-width:80%;";
+    botMsg.textContent = data.reply;
+    chatbotMessages.appendChild(botMsg);
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 

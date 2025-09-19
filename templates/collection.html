@@ -40,10 +40,12 @@
           <div
             class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-all relative"
           >
-            <input
-              type="checkbox"
-              class="absolute top-4 right-4 meeting-checkbox w-5 h-5 accent-blue-600"
-            />
+          <input
+          type="checkbox"
+          value="{{ meeting.id }}"
+          class="absolute top-4 right-4 meeting-checkbox w-5 h-5 accent-blue-600"
+        />
+        
 
             <h3 class="text-xl font-bold text-blue-600">{{ meeting.title }}</h3>
             <span class="text-xs text-gray-500">{{ meeting.date }}</span>
@@ -100,6 +102,33 @@
         </div>
       </div>
     </div>
+
+    <div
+  id="remove-modal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden"
+>
+  <div class="bg-white rounded-2xl shadow-lg p-6 max-w-sm w-full">
+    <h2 class="text-xl font-bold text-red-600 mb-4">Remove Meetings</h2>
+    <p id="remove-modal-text" class="text-gray-700 mb-6">
+      Are you sure you want to remove these meetings from the collection?
+    </p>
+    <div class="flex justify-end space-x-3">
+      <button
+        id="cancel-remove"
+        class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
+      >
+        Cancel
+      </button>
+      <button
+        id="confirm-remove"
+        class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+      >
+        Remove
+      </button>
+    </div>
+  </div>
+</div>
+
 
     <script>
       const deleteCollectionBtn = document.getElementById(
@@ -169,32 +198,75 @@
         cb.addEventListener("change", updateRemoveBtn)
       );
 
-      // Remove selected meetings from collection
-      removeBtn.addEventListener("click", () => {
-        const selectedIds = Array.from(checkboxes)
-          .filter((cb) => cb.checked)
-          .map((cb) => cb.value);
-        if (selectedIds.length === 0) return;
+      // // Remove selected meetings from collection
+      // removeBtn.addEventListener("click", () => {
+      //   const selectedIds = Array.from(checkboxes)
+      //     .filter((cb) => cb.checked)
+      //     .map((cb) => cb.value);
+      //   if (selectedIds.length === 0) return;
 
-        if (
-          confirm(
-            `Are you sure you want to remove ${selectedIds.length} meeting(s) from this collection?`
-          )
-        ) {
-          Promise.all(
-            selectedIds.map((id) =>
-              fetch(`/move_meeting/${id}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ collection_id: null }),
-              })
-            )
-          ).then((responses) => {
-            if (responses.every((r) => r.ok)) window.location.reload();
-            else alert("Error removing some meetings from collection.");
-          });
-        }
-      });
+      //   if (
+      //     confirm(
+      //       `Are you sure you want to remove ${selectedIds.length} meeting(s) from this collection?`
+      //     )
+      //   ) {
+      //     Promise.all(
+      //       selectedIds.map((id) =>
+      //         fetch(`/move_meeting/${id}`, {
+      //           method: "POST",
+      //           headers: { "Content-Type": "application/json" },
+      //           body: JSON.stringify({ collection_id: null }),
+      //         })
+      //       )
+      //     ).then((responses) => {
+      //       if (responses.every((r) => r.ok)) window.location.reload();
+      //       else alert("Error removing some meetings from collection.");
+      //     });
+      //   }
+      // });
+
+      const removeModal = document.getElementById("remove-modal");
+const cancelRemove = document.getElementById("cancel-remove");
+const confirmRemove = document.getElementById("confirm-remove");
+const removeModalText = document.getElementById("remove-modal-text");
+
+let meetingsToRemove = [];
+
+// Open modal on remove button click
+removeBtn.addEventListener("click", () => {
+  meetingsToRemove = Array.from(checkboxes)
+    .filter((cb) => cb.checked)
+    .map((cb) => cb.value);
+
+  if (meetingsToRemove.length === 0) return;
+
+  removeModalText.textContent = `Are you sure you want to remove ${meetingsToRemove.length} meeting(s) from this collection?`;
+  removeModal.classList.remove("hidden");
+});
+
+// Cancel removal
+cancelRemove.addEventListener("click", () => {
+  removeModal.classList.add("hidden");
+  meetingsToRemove = [];
+});
+
+// Confirm removal
+confirmRemove.addEventListener("click", () => {
+  fetch("/remove_meetings_from_collection", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ meeting_ids: meetingsToRemove }),
+  })
+    .then((res) => {
+      if (res.ok) window.location.reload();
+      else {
+        alert("Error removing meetings from collection.");
+        removeModal.classList.add("hidden");
+      }
+    })
+    .catch(() => alert("Network error"));
+});
+
 
       // Initialize button state
       updateRemoveBtn();

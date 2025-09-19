@@ -9,12 +9,51 @@
       rel="stylesheet"
     />
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-
-
+    <style>
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        transform: translateX(100%);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .toast.show {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      
+      .toast.success {
+        background-color: #10B981;
+      }
+      
+      .toast.error {
+        background-color: #EF4444;
+      }
+      
+      .toast-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+    </style>
   </head>
   <body
     class="bg-gradient-to-br from-blue-100 to-blue-50 flex flex-col items-center justify-center min-h-screen font-sans p-4"
   >
+    <!-- Toast container -->
+    <div id="toastContainer"></div>
+    
     <div
       class="bg-white shadow-2xl rounded-3xl w-full max-w-3xl mx-auto border border-gray-200 flex flex-col md:flex-row overflow-hidden"
     >
@@ -108,6 +147,7 @@
           action="{{ url_for('register') }}"
           method="POST"
           class="space-y-4 sm:space-y-5"
+          id="registerForm"
         >
           <div>
             <label
@@ -159,5 +199,77 @@
         For testing the app use the email <b>test@gmail.com</b> and password <b>1234</b> to login
       </p>
     </div>
+
+    <script>
+      // Function to show toast notification
+      function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        // Add appropriate icon based on toast type
+        let iconSvg = '';
+        if (type === 'success') {
+          iconSvg = '<svg class="toast-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>';
+        } else {
+          iconSvg = '<svg class="toast-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>';
+        }
+        
+        toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+        
+        document.getElementById('toastContainer').appendChild(toast);
+        
+        // Trigger reflow to enable transition
+        void toast.offsetWidth;
+        
+        toast.classList.add('show');
+        
+        // Remove toast after 5 seconds
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => {
+            if (document.getElementById('toastContainer').contains(toast)) {
+              document.getElementById('toastContainer').removeChild(toast);
+            }
+          }, 300);
+        }, 5000);
+      }
+      
+      // Handle form submission
+      document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const username = formData.get('username');
+        const password = formData.get('password');
+        
+        try {
+          const response = await fetch("{{ url_for('register') }}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+          });
+          
+          if (response.redirected) {
+            // Success - show success toast and redirect
+            showToast('Registration successful! Redirecting to login...', 'success');
+            setTimeout(() => {
+              window.location.href = response.url;
+            }, 2000);
+          } else {
+            // Error - show error toast
+            const text = await response.text();
+            if (text.includes('Username exists!')) {
+              showToast('Username already exists! Please try a different one.', 'error');
+            } else {
+              showToast('Username already exists! Please try a different one.', 'error');
+            }
+          }
+        } catch (error) {
+          showToast('Network error. Please try again.', 'error');
+        }
+      });
+    </script>
   </body>
 </html>

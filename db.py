@@ -1,9 +1,34 @@
-import sqlite3
+# db.py
+import sqlitecloud
 
-def init_db():
-    conn = sqlite3.connect("meetings.db")
-    conn.row_factory = sqlite3.Row
+# Replace with your SQLite Cloud URL
+DB_URL = "sqlitecloud://cekbo8acnk.g2.sqlite.cloud:8860/actionnotes.sqlite3?apikey=YPrFryodsBthblXh4RpZhyHeuRoCcVBiIjnRUCVUmaQ"
+
+def get_conn():
+    """
+    Returns a connection to SQLite Cloud with dict-style row access.
+    """
+    conn = sqlitecloud.connect(DB_URL)
+    # Dict-style rows for easy access in Flask
+    conn.row_factory = lambda cursor, row: {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
+    return conn
+
+
+def init_db(drop_existing=False):
+    """
+    Initialize the database tables.
+    Set drop_existing=True to completely reset the database.
+    """
+    conn = get_conn()
     cursor = conn.cursor()
+
+    if drop_existing:
+        # Drop all tables if you want a fresh start
+        cursor.execute("DROP TABLE IF EXISTS upcoming_meetings")
+        cursor.execute("DROP TABLE IF EXISTS tasks")
+        cursor.execute("DROP TABLE IF EXISTS meetings")
+        cursor.execute("DROP TABLE IF EXISTS collections")
+        cursor.execute("DROP TABLE IF EXISTS users")
 
     # ---------- Users table ----------
     cursor.execute('''
@@ -15,11 +40,8 @@ def init_db():
     ''')
 
     # ---------- Collections table ----------
-    # Drop old table if exists
-    cursor.execute("DROP TABLE IF EXISTS collections")
-    # Create new table with UNIQUE(name, user_id)
     cursor.execute('''
-    CREATE TABLE collections (
+    CREATE TABLE IF NOT EXISTS collections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         user_id INTEGER,
@@ -43,14 +65,6 @@ def init_db():
     )
     ''')
 
-    # Ensure user_id & collection_id exist (for older tables)
-    cursor.execute("PRAGMA table_info(meetings)")
-    meeting_columns = [col[1] for col in cursor.fetchall()]
-    if "user_id" not in meeting_columns:
-        cursor.execute("ALTER TABLE meetings ADD COLUMN user_id INTEGER")
-    if "collection_id" not in meeting_columns:
-        cursor.execute("ALTER TABLE meetings ADD COLUMN collection_id INTEGER REFERENCES collections(id)")
-
     # ---------- Tasks table ----------
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS tasks (
@@ -61,7 +75,7 @@ def init_db():
         FOREIGN KEY(meeting_id) REFERENCES meetings(id)
     )
     ''')
-    
+
     # ---------- Upcoming Meetings table ----------
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS upcoming_meetings (
@@ -76,3 +90,4 @@ def init_db():
 
     conn.commit()
     conn.close()
+    print("Database initialized successfully!")

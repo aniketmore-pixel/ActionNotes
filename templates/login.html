@@ -9,12 +9,69 @@
       rel="stylesheet"
     />
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-
-
+    <style>
+      /* Toast notification styles */
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        transform: translateX(100%);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 350px;
+      }
+      
+      .toast.show {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      
+      .toast.error {
+        background-color: #EF4444;
+        border-left: 4px solid #DC2626;
+      }
+      
+      .toast-content {
+        display: flex;
+        align-items: center;
+      }
+      
+      .toast-icon {
+        margin-right: 10px;
+        font-size: 18px;
+      }
+      
+      .toast-close {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        margin-left: 15px;
+        font-size: 18px;
+      }
+    </style>
   </head>
   <body
     class="bg-gradient-to-br from-blue-100 to-blue-50 flex flex-col items-center justify-center min-h-screen font-sans p-4"
   >
+    <!-- Toast notification container -->
+    <div id="toast" class="toast error hidden">
+      <div class="toast-content">
+        <span class="toast-icon">⚠️</span>
+        <span id="toast-message"></span>
+      </div>
+      <button class="toast-close" onclick="hideToast()">&times;</button>
+    </div>
+
     <div
       class="bg-white shadow-2xl rounded-3xl w-full max-w-3xl mx-auto border border-gray-200 flex flex-col md:flex-row overflow-hidden"
     >
@@ -108,6 +165,7 @@
           action="{{ url_for('login') }}"
           method="POST"
           class="space-y-4 sm:space-y-5"
+          id="loginForm"
         >
           <div>
             <label
@@ -159,5 +217,39 @@
         For testing the app use the Gmail <b>test@gmail.com</b> and password <b>1234</b> to login
       </p>
     </div>
+
+    <script>
+      // Toast notification functions
+      function showToast(message, type = 'error') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        
+        toastMessage.textContent = message;
+        toast.className = `toast ${type} show`;
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+          hideToast();
+        }, 5000);
+      }
+      
+      function hideToast() {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('show');
+        setTimeout(() => {
+          toast.className = 'toast error hidden';
+        }, 300);
+      }
+      
+      // Check if there's an error message in the URL parameters
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        
+        if (error) {
+          showToast(error);
+        }
+      });
+    </script>
   </body>
 </html>
