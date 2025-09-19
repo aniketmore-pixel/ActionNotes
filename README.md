@@ -8,6 +8,11 @@
 
 ---
 
+## 📌 Screenshots
+
+
+---
+
 ## 📌 Overview
 **ActionNotes** is an AI-powered **meeting management app** built with **Flask**.  
 It allows you to **upload meeting recordings or transcripts** and automatically:
